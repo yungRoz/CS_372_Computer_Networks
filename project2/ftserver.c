@@ -345,7 +345,7 @@ void acceptConnections(){
                                 sleep(1);
                                 printf("READY TO CONNECT\n");
                                 setUpSConnect();
-                                printf("CONNECTED!");
+                                /*printf("CONNECTED!");
                                 //get list of directory contents
                                 getDirList();
                                 //send initial message connecting to client
@@ -354,7 +354,7 @@ void acceptConnections(){
                                 // directories, just ignore because they will be
                                 // sent
                                 getResponse(ignore);
-                                sendMessage(directory);
+                                sendMessage(directory);*/
                         }
                         else if(s.cmnd == get) {
                                 setUpSConnect();
