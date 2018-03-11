@@ -16,12 +16,6 @@ from socket import *
 
 def getopts(argv):
     opts = {}  # Empty dictionary to store key-value pairs.
-    while argv:  # While there are arguments left to parse...
-        # if argv[0][0] == '-':  # Found a "-name value" pair.
-        opts[argv[0]] = argv[1]  # Add key and value to the dictionary.
-        # Reduce the argument list by copying it starting from index 1.
-        argv = argv[1:]
-
     opts['serverHost'] = argv[1] + '.engr.oregonstate.edu'
     opts['serverPort'] = int(argv[2])
     opts['command'] = argv[3]
