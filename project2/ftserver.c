@@ -400,15 +400,17 @@ void acceptConnections(){
                         if(s.cmnd == list) {
                                 sleep(1);
                                 setUpSConnect(list);
+                                close(s.dataSocketFD);
                         }
                         else if(s.cmnd == get && s.noError) {
                                 sleep(1);
                                 setUpSConnect(get);
+                                close(s.dataSocketFD);
+
                         }
-                        else{
+                        else if (s.cmnd == sendError){
                                 printf("ERROR: validating command.\n");
                         }
-                        close(s.dataSocketFD);
                         close(s.establishedConnectionFD);
                 }
         }
