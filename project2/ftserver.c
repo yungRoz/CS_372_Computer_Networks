@@ -369,6 +369,7 @@ void acceptConnections(){
                                 sendMessage(directory);*/
                         }
                         else if(s.cmnd == get) {
+                                sleep(1); 
                                 setUpSConnect(get);
                         }
                         else{
