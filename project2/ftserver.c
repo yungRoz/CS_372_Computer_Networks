@@ -406,7 +406,7 @@ void acceptConnections(){
                                 setUpSConnect(get);
                         }
                         else{
-                                error("ERROR: validating command.");
+                                printf("ERROR: validating command.\n");
                         }
                         close(s.dataSocketFD);
                         close(s.establishedConnectionFD);
