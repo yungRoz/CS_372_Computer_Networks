@@ -43,28 +43,6 @@ struct  Ftserver
 struct Ftserver s;
 
 /*********************************************************************
- ** Description: sends the amount being sent from the server across
- ** the dataSocket or the initial connection socket
- *********************************************************************/
-void sendAmount(int amnt, int type)
-{
-    // clear out amount to send buffer
-    memset(s.amountBuffer,'\0', 10);
-    // store amount in amountBuffer
-    sprintf(s.amountBuffer, "%d", amnt);
-    // send amount buffer to the server
-
-    if(type == data){
-
-    }
-    if(type == client){
-
-    }
-    m.charsWritten = (int)send(m.socketFD, m.amountBuffer, strlen(m.amountBuffer) + 1, 0);
-    if (m.charsWritten < 0) error("CLIENT: ERROR sending amount");
-}
-
-/*********************************************************************
 ** Description: error function used to display error messages
 *********************************************************************/
 void error(const char *msg) {
