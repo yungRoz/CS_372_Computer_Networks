@@ -76,7 +76,8 @@ class Messenger:
 
     # connect to server
     def connectToServer(self):
-        self.serverSocket.connect((self.hname, self.pnum))
+        self.connectionSocket = self.serverSocket
+        self.connectionSocket.connect((self.hname, self.pnum))
     # listen for server
 
     def listenForServer(self):
@@ -101,7 +102,7 @@ class Messenger:
     # gets the incoming message relating to the incoming ammount
     # stores this as an int in self.amnt, the 1000 amount is
     # a flag that means the client is closing the connection
-    def getIncomingAmount(self):
+    def getIncomingAmount(self, data=False):
         amnt = self.connectionSocket.recv(10)
         amnt = amnt.decode()
         amnt = int(amnt.split('\x00')[0])
