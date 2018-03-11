@@ -134,7 +134,7 @@ class Messenger:
             fullMessage += portionDecoded
             read += len(portionDecoded)
         # remove new line characters
-        fullMessage = fullMessage.replace("\n", "")
+        #fullMessage = fullMessage.replace("\n", "")
         #print(fullMessage)
         return fullMessage
 
