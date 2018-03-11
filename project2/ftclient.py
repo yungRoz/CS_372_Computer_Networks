@@ -217,7 +217,7 @@ if __name__ == '__main__':
         # dataSocket.getAmount()
         # datasocket.sendMessage('received amount')
         # get message containing directories
-        message = dataSocket.getMessage()
+        #message = dataSocket.getMessage()
         print(message)
         #messages = splitUpSpaces(message)
     else:
