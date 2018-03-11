@@ -135,7 +135,7 @@ class Messenger:
 
 
 def getClientHostName():
-    ipAddress = socket.gethostbyname(socket.gethostname)
+    ipAddress = socket.gethostbyname(socket.gethostname())
     response = socket.gethostbyaddr(ipAddress)
     hostname = response[0][:5]
     return hostname
