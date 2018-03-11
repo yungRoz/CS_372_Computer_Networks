@@ -21,7 +21,7 @@
 // input and message types
 enum types {name=0, port, message, initialMessage, server,
             ignore, client, command, list, get, sendError, confirmation,
-            data, amount, directory, file, hostName};
+            data, amount, directory, file, hostName, filename};
 
 struct  Ftserver
 {
@@ -31,10 +31,11 @@ struct  Ftserver
         int i;
         int option;
         socklen_t sizeOfClientInfo;
+        struct hostent* serverHostInfo;
         struct sockaddr_in serverAddress, clientAddress;
         char buffer[1500], portBuffer[20], commandBuffer[5], amountBuffer[10];
         char fileNameBuffer[20], dirBuffer[20000], fileBuffer[100000];
-        char hostNameBuffer[5], originPortBuffer[10];
+        char hostNameBuffer[5], originPortBuffer[10], ipBuffer[100];
 
 };
 
@@ -50,25 +51,33 @@ void error(const char *msg) {
 
 
 /*********************************************************************
-** Description: sends the amount being sent from the client to the
-** server
-*********************************************************************
-   void sendAmount(int amnt)
-   {
-        // clear out amount to send buffer
-        memset(s.amountBuffer,'\0', 10);
-        // store amount in amountBuffer
-        sprintf(s.amountBuffer, "%d", amnt);
-        // send amount buffer to the server
-        if(type==confirmation) {
-                s.charsWritten = (int)send(s.establishedConnectionFD, s.amountBuffer, strlen(s.amountBuffer) - 1, 0);
-        }
-        if(type==data) {
-                s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer, strlen(s.amountBuffer) - 1, 0);
-        }
-        if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
-   }*/
+** Description: convert the hostname to ip address
+** source: https://www.binarytides.com/hostname-to-ip-address-c-sockets-linux/
+*********************************************************************/
+int hostname_to_ip(char * hostname , char* ip)
+{
+    struct hostent *he;
+    struct in_addr **addr_list;
+    int i;
 
+    if ( (he = gethostbyname( s.hostNameBuffer ) ) == NULL)
+    {
+        // get the host info
+        herror("gethostbyname");
+        return 1;
+    }
+
+    addr_list = (struct in_addr **) he->h_addr_list;
+
+    for(i = 0; addr_list[i] != NULL; i++)
+    {
+        //Return the first one;
+        strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
+        return 0;
+    }
+
+    return 1;
+}
 
 /*********************************************************************
 ** Description: gets back messages from server, stores in global
@@ -96,6 +105,9 @@ void getResponse(int type)
                 memset(s.hostNameBuffer, '\0', sizeof(s.hostNameBuffer));
                 strncpy(s.hostNameBuffer, s.buffer, sizeof(s.buffer));
                 printf("Connection from %s\n", s.buffer);
+                strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
+                if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
+                s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
@@ -279,7 +291,7 @@ void acceptConnections(){
         while(1) {
                 s.establishedConnectionFD = accept(s.listenSocketFD, NULL, NULL);
                 if(s.establishedConnectionFD < 0) error("Server: ERROR on accept");
-                printf("Connection from ")
+
                 // fork process for multi-threading support
                 s.pid = fork();
                 // if no errors in forking
@@ -289,6 +301,8 @@ void acceptConnections(){
                         // get the client host name
                         getResponse(hostName);
                         sendMessage(confirmation);
+                        // display connection from message
+                        printf("Connection from %s\n", s.hostNameBuffer);
                         // get the request port number
                         getResponse(port);
                         sendMessage(confirmation);
@@ -309,14 +323,14 @@ void acceptConnections(){
                                 // directories, just ignore because they will be
                                 // sent
                                 getResponse(ignore);
-                                sendMessage(directories);
+                                sendMessage(directory);
                         }
                         else if(s.cmnd == get) {
                                 setUpSConnect();
                                 getText();
                                 sendMessage(confirmation);
                                 getResponse(filename);
-                                sendMessage(confrimation);
+                                sendMessage(confirmation);
                                 getResponse(ignore);
                                 sendMessage(file);
                         }
@@ -324,6 +338,7 @@ void acceptConnections(){
                                 error("ERROR: validating command.");
                         }
                         close(s.dataSocketFD);
+                        close(s.establishedConnectionFD);
                 }
         }
 }
@@ -354,14 +369,14 @@ int main(int argc, const char* argv[]){
         else {    // set up portNumber and hostName
                 s.portNumber = atoi(argv[2]);
                 memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
-                s.originPortBuffer = argv[2];
+                strcat(s.originPortBuffer, argv[2]);
                 printf("Server open on %s", argv[2]);
         }
         //set up server for listening
         setUpS();
         setUpSListen();
         //wait for and process connections
-        acceptConnections(); */
+        acceptConnections();
 
 
 
