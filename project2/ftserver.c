@@ -73,7 +73,7 @@ int hostname_to_ip()
         {
                 //Return the first one;
                 strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
-                printf("IP: %s", s.ipBuffer);
+                printf("IP: %s\n", s.ipBuffer);
                 return 0;
         }
 
@@ -115,7 +115,7 @@ void getResponse(int type)
                 printf("Connection from %s\n", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
-                s.serverHostInfo = gethostbyname(s.hostNameBuffer);
+                //s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
@@ -316,7 +316,7 @@ void acceptConnections(){
                         getResponse(hostName);
                         sendMessage(confirmation);
                         // display connection from message
-                        printf("Connection from %s\n", s.hostNameBuffer);
+                        //printf("Connection from %s\n", s.hostNameBuffer);
                         // get the request port number
                         getResponse(port);
                         sendMessage(confirmation);

@@ -82,6 +82,7 @@ class Messenger:
     # listen for server
 
     def listenForServer(self):
+        print("listening on port " + self.dport)
         self.serverSocket.bind(('', self.dport))
         self.serverSocket.listen(1)
 
@@ -106,7 +107,7 @@ class Messenger:
     def getIncomingAmount(self, data=False):
         amnt = self.connectionSocket.recv(10)
         amnt = amnt.decode()
-        print(amnt.split('\x00')[0])
+        #print(amnt.split('\x00')[0])
         amnt = int(amnt.split('\x00')[0])
         self.amnt = amnt
 
@@ -131,7 +132,7 @@ class Messenger:
             read += len(portionDecoded)
         # remove new line characters
         fullMessage = fullMessage.replace("\n", "")
-        print(fullMessage)
+        #print(fullMessage)
         return fullMessage
 
     # closes connection
