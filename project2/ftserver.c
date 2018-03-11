@@ -121,7 +121,7 @@ void getResponse(int type)
                 strncpy(s.fileNameBuffer, s.buffer, sizeof(s.buffer));
                 printf("File \"%s\" requested on port %s.\n", s.fileNameBuffer, s.portBuffer);
         }
-        else if(typs == ignore){
+        else if(type == ignore){
                 memset(s.buffer, '\0', sizeof(s.buffer));
                 s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
