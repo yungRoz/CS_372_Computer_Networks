@@ -233,10 +233,11 @@ void setUpSConnect()
         // Set up the socket
         s.dataSocketFD = socket(AF_INET, SOCK_STREAM, 0); // Create the socket
         if (s.dataSocketFD < 0) error("CLIENT: ERROR opening socket");
-
+        printf("Connecting to client\n");
         // Connect to server address
         if (connect(s.dataSocketFD, (struct sockaddr*)&s.serverAddress, sizeof(s.serverAddress)) < 0)
                 error("CLIENT: ERROR connecting");
+        printf("Connected to client\n"); 
 }
 
 void validate(int type){
