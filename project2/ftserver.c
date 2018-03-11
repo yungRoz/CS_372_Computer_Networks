@@ -1,7 +1,7 @@
 /*********************************************************************
 ** Author: Romano Garza
 ** Date: 02/11/18
-** Description: Server program for chating with a server
+** Description: Server program for file transfer with a client
 *********************************************************************/
 #include <dirent.h>
 #include <stdio.h>
@@ -68,10 +68,12 @@ void getText(){
                 s.fileBuffer[fsize-1] = '\0';
                 s.fileBuffer[fsize] = '\0';
                 fclose(fp);
+                // display success message on server screen
+                printf("%s\n", successFileMessage);
         }
         else{
-                printf("File not found sending error message to %s:%s\n",
-                       s.fileNameErrScrnMessage);
+                // display error message on server screen
+                printf("%s\n", s.fileNameErrScrnMessage);
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
                 strcat(s.fileBuffer, "FILE NOT FOUND" );
         }
@@ -146,8 +148,7 @@ void getResponse(int type)
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
-                // cat the portnumber to all screen messages
-                strcat(s.fileNameErrScrnMessage, s.portBuffer);
+                // cat the portnumber to screen messages
                 strcat(s.successDirMessage, s.portBuffer);
                 strcat(s.successFileMessage, s.portBuffer);
         }
@@ -210,6 +211,7 @@ void sendMessage(int type){
         // Check for errors
         if(type == directory) {
                 getDirList();
+                printf("%s\n",s.successDirMessage); 
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
                 //printf("amount %d\n", amount);
