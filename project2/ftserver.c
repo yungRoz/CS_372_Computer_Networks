@@ -144,6 +144,7 @@ void sendMessage(int type){
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
                 // send amount buffer to the server
+                printf("Sending amount!");
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(ignore);

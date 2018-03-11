@@ -96,6 +96,7 @@ class Messenger:
 
     def waitAndRecAmnt(self):
         self.connectionSocket, self.addr = self.serverSocket.accept()
+        print("CONNECTION RECEIVED!")
         amnt = self.connectionSocket.recv(10)
         amnt = amnt.decode()
         amnt = int(amnt.split('\x00')[0])
