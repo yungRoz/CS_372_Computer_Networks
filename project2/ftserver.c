@@ -139,6 +139,7 @@ void sendMessage(int type){
         if(type == directory) {
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
+                printf("amount %d\n", amount); 
                 // clear out amount to send buffer
                 memset(s.amountBuffer,'\0', 10);
                 // store amount in amountBuffer
@@ -301,7 +302,7 @@ void setUpSConnect()
         printf("Connected to client\n");
         //get list of directory contents
         getDirList();
-        printf("Sending directory!\n"); 
+        printf("Sending directory!\n");
         //send initial message connecting to client
         //sendMessage(confirmation);
         // client sends back request for
