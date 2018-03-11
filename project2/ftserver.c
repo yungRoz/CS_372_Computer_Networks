@@ -91,7 +91,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
                                    sizeof(s.portBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                printf("Here is the requested port %s", s.portBuffer);
+                printf("Requested port %s\n", s.portBuffer);
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
         }
@@ -100,6 +100,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.commandBuffer,
                                    sizeof(s.commandBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+                printf("Command %s\n");
                 if( strcmp(s.commandBuffer, "-l") == 0) {
                         printf("List directory requested on pornt %s. \n", s.portBuffer);
                 }
@@ -110,7 +111,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
                                    sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                printf("Connection from %s", s.hostNameBuffer);
+                printf("Connection from %s\n", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
                 //if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 s.serverHostInfo = gethostbyname(s.hostNameBuffer);
