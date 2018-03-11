@@ -54,7 +54,7 @@ void error(const char *msg) {
 ** Description: convert the hostname to ip address
 ** source: https://www.binarytides.com/hostname-to-ip-address-c-sockets-linux/
 *********************************************************************/
-int hostname_to_ip(char * hostname , char* ip)
+int hostname_to_ip()
 {
     struct hostent *he;
     struct in_addr **addr_list;
