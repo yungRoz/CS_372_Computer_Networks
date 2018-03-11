@@ -69,7 +69,7 @@ void getText(){
                 s.fileBuffer[fsize] = '\0';
                 fclose(fp);
                 // display success message on server screen
-                printf("%s\n", successFileMessage);
+                printf("%s\n", s.successFileMessage);
         }
         else{
                 // display error message on server screen
