@@ -56,27 +56,27 @@ void error(const char *msg) {
 *********************************************************************/
 int hostname_to_ip()
 {
-    struct hostent *he;
-    struct in_addr **addr_list;
-    int i;
+        struct hostent *he;
+        struct in_addr **addr_list;
+        int i;
 
-    if ( (he = gethostbyname( s.hostNameBuffer ) ) == NULL)
-    {
-        // get the host info
-        herror("gethostbyname");
+        if ( (he = gethostbyname( s.hostNameBuffer ) ) == NULL)
+        {
+                // get the host info
+                herror("gethostbyname");
+                return 1;
+        }
+
+        addr_list = (struct in_addr **) he->h_addr_list;
+
+        for(i = 0; addr_list[i] != NULL; i++)
+        {
+                //Return the first one;
+                strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
+                return 0;
+        }
+
         return 1;
-    }
-
-    addr_list = (struct in_addr **) he->h_addr_list;
-
-    for(i = 0; addr_list[i] != NULL; i++)
-    {
-        //Return the first one;
-        strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
-        return 0;
-    }
-
-    return 1;
 }
 
 /*********************************************************************
@@ -85,27 +85,31 @@ int hostname_to_ip()
 *********************************************************************/
 void getResponse(int type)
 {
-        // clear out buffer
-        memset(s.buffer, '\0', sizeof(s.buffer));
-        s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
-        if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
 
         if(type == port) {
                 memset(s.portBuffer, '\0', sizeof(s.portBuffer));
-                strncpy(s.portBuffer, s.buffer, sizeof(s.buffer));
+                s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
+                                   sizeof(s.portBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
         }
         else if(type == command) {
                 memset(s.commandBuffer, '\0', sizeof(s.commandBuffer));
-                strncpy(s.commandBuffer, s.buffer, sizeof(s.buffer));
+                s.charsRead = recv(s.establishedConnectionFD, s.commandBuffer,
+                                   sizeof(s.commandBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+                if( strcmp(s.commandBuffer, '-l') == 0) {
+                        printf("List directory requested on pornt %s. \n", s.portBuffer);
+                }
         }
         else if(type == hostName) {
 
                 memset(s.hostNameBuffer, '\0', sizeof(s.hostNameBuffer));
-                strncpy(s.hostNameBuffer, s.buffer, sizeof(s.buffer));
-                printf("Connection from %s\n", s.buffer);
-                strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
+                s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
+                                   sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+                strcat(s.hostNameBuffer, ".engr.oregonstate.edu", strlen(s.hostNameBuffer));
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
@@ -113,6 +117,11 @@ void getResponse(int type)
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
                 strncpy(s.fileNameBuffer, s.buffer, sizeof(s.buffer));
                 printf("File \"%s\" requested on port %s.\n", s.fileNameBuffer, s.portBuffer);
+        }
+        else{
+                memset(s.buffer, '\0', sizeof(s.buffer));
+                s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
         }
 
 }
@@ -250,7 +259,7 @@ void getDirList(){
                            strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], dir->d_name);
                            strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], " ");*/
                         strcat(s.dirBuffer, dir->d_name);
-                        strcat(s.dirBuffer, " ");
+                        strcat(s.dirBuffer, " ", strlen(s.dirBuffer));
                 }
                 closedir(d);
         }
@@ -296,8 +305,8 @@ void acceptConnections(){
                 // fork process for multi-threading support
                 //s.pid = fork();
                 // if no errors in forking
-                if(1){//s.pid==0) {
-                        //close the socket we waited on
+                if(1) { //s.pid==0) {
+                       //close the socket we waited on
                         close(s.listenSocketFD);
                         // get the client host name
                         getResponse(hostName);
