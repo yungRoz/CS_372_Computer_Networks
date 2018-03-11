@@ -109,8 +109,9 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
                                    sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+                printf("Connection from %s", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
-                if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
+                //if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
@@ -164,15 +165,15 @@ void sendMessage(int type){
         }
         else if( type == confirmation) {
                 if(s.cmnd == sendError) {
-                        s.charsWritten = send(s.establishedConnectionFD, "22", 2, 0);
+                        s.charsWritten = send(s.establishedConnectionFD, "22", 3, 0);
                         getResponse(ignore);
                         s.charsWritten = send(s.establishedConnectionFD,
-                                              "ERROR: invalid command", 22, 0);
+                                              "ERROR: invalid command", 23, 0);
                 }
                 else {
-                        s.charsWritten = send(s.establishedConnectionFD, "3", 1, 0);
+                        s.charsWritten = send(s.establishedConnectionFD, "3", 2, 0);
                         getResponse(ignore);
-                        s.charsWritten = send(s.establishedConnectionFD, "Got", 3, 0);
+                        s.charsWritten = send(s.establishedConnectionFD, "Got", 4, 0);
                 }
         }
 
