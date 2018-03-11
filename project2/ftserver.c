@@ -307,7 +307,7 @@ void setUpSConnect()
         // directories, just ignore because they will be
         // sent
         getResponse(ignore);
-        sendMessage(direc
+        sendMessage(directory; 
 }
 
 /*********************************************************************
