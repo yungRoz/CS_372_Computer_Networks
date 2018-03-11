@@ -329,8 +329,10 @@ void acceptConnections(){
                         sendMessage(confirmation);
 
                         if(s.cmnd == list) {
-                                sleep(3);
+                                sleep(1);
+                                printf("READY TO CONNECT\n");
                                 setUpSConnect();
+                                printf("CONNECTED!");
                                 //get list of directory contents
                                 getDirList();
                                 //send initial message connecting to client
