@@ -33,9 +33,10 @@ struct  Ftserver
         socklen_t sizeOfClientInfo;
         struct hostent* serverHostInfo;
         struct sockaddr_in serverAddress, clientAddress;
-        char buffer[1500], portBuffer[20], commandBuffer[5], amountBuffer[10];
+        char buffer[1500], fileNameErrScrnMessage[100], successFileMessage[100], successDirMessage[100], portBuffer[20], commandBuffer[5], amountBuffer[10];
         char fileNameBuffer[20], dirBuffer[20000], fileBuffer[100000];
         char hostNameBuffer[10], originPortBuffer[10], ipBuffer[100];
+
 
 };
 
@@ -69,8 +70,8 @@ void getText(){
                 fclose(fp);
         }
         else{
-                printf("File not found sending error message to %s:%s",
-                       s.hostNameBuffer, s.originPortBuffer);
+                printf("File not found sending error message to %s:%s\n",
+                       s.fileNameErrScrnMessage);
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
                 strcat(s.fileBuffer, "FILE NOT FOUND" );
         }
@@ -145,6 +146,10 @@ void getResponse(int type)
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
+                // cat the portnumber to all screen messages
+                strcat(s.fileNameErrScrnMessage, s.portBuffer);
+                strcat(s.successDirMessage, s.portBuffer);
+                strcat(s.successFileMessage, s.portBuffer);
         }
         else if(type == command) {
                 memset(s.commandBuffer, '\0', sizeof(s.commandBuffer));
@@ -164,12 +169,21 @@ void getResponse(int type)
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 //printf("Connection from %s\n", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
+                // store hostname in all display message buffers
+                // this is to avoid a bug in hostname_to_ip
+                memset(s.fileNameErrScrnMessage,'\0', sizeof(s.fileNameErrScrnMessage));
+                memset(s.successFileMessage, '\0', sizeof(s.successFileMessage));
+                memset(s.successDirMessage, '\0', sizeof(s.successDirMessage));
+                sprintf(s.successFileMessage,"Sending file contents to %s:", hostNameBuffer)
+                sprintf(s.successDirMessage, "Sending directory contents to %s:", s.hostNameBuffer);
+                sprintf(s.fileNameErrScrnMessage, "File not found sending error message to %s:", s.hostNameBuffer);
+                strcat(s.fileNameErrScrnMessage, s.originPortBuffer);
+
+
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 //s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
-
-
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
                 s.charsRead = recv(s.dataSocketFD, s.fileNameBuffer, sizeof(s.fileNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
@@ -320,8 +334,6 @@ void setUpSConnect(int type)
         //printf("Connected to client\n");
         //get list of directory contents
         if(type==list){
-          //getDirList();
-          //printf("Sending directory!\n");
           sendMessage(directory);
         }
         else if(type==get){
@@ -363,18 +375,7 @@ void acceptConnections(){
 
                         if(s.cmnd == list) {
                                 sleep(1);
-                                //printf("READY TO CONNECT\n");
                                 setUpSConnect(list);
-                                /*printf("CONNECTED!");
-                                //get list of directory contents
-                                getDirList();
-                                //send initial message connecting to client
-                                sendMessage(confirmation);
-                                // client sends back request for
-                                // directories, just ignore because they will be
-                                // sent
-                                getResponse(ignore);
-                                sendMessage(directory);*/
                         }
                         else if(s.cmnd == get) {
                                 sleep(1);
@@ -393,21 +394,7 @@ void acceptConnections(){
 
 
 int main(int argc, const char* argv[]){
-        //test getDirList();
-        //int i = 0;
-        //getDirList();
-        //printf("%s", s.dirBuffer);
-        /*/ /core dumps in terminal   // can be fixed by initializing
-        //array of strings with null values
-        while(s.dirBuffer[i]!= NULL) {
-                printf("string: %s  string_size:%d \n", s.dirBuffer[i], (int)sizeof(s.dirBuffer[i]));
-                i++;
-        } */
 
-        /* test getText(); */
-        //getText("textfile.txt");
-        //printf("\n\nHere's what was read: %s\n\n", s.fileBuffer);
-        // check argument count
         if (argc < 2) {
                 fprintf(stderr,"USAGE: %s portNumber\n", argv[0]);
                 exit(0);
@@ -419,13 +406,8 @@ int main(int argc, const char* argv[]){
                 printf("Server open on %s\n", argv[1]);
         }
         //set up server for listening
-        //setUpS();
         setUpSListen();
         //wait for and process connections
         acceptConnections();
-
-
-
-
 
 }
