@@ -43,10 +43,83 @@ struct  Ftserver
 struct Ftserver s;
 
 /*********************************************************************
+ ** Description: sends the amount being sent from the server across
+ ** the dataSocket or the initial connection socket
+ *********************************************************************/
+void sendAmount(int amnt, int type)
+{
+    // clear out amount to send buffer
+    memset(s.amountBuffer,'\0', 10);
+    // store amount in amountBuffer
+    sprintf(s.amountBuffer, "%d", amnt);
+    // send amount buffer to the server
+
+    if(type == data){
+
+    }
+    if(type == client){
+
+    }
+    m.charsWritten = (int)send(m.socketFD, m.amountBuffer, strlen(m.amountBuffer) + 1, 0);
+    if (m.charsWritten < 0) error("CLIENT: ERROR sending amount");
+}
+
+/*********************************************************************
 ** Description: error function used to display error messages
 *********************************************************************/
 void error(const char *msg) {
         perror(msg); exit(EXIT_FAILURE);
+}
+
+void getText(){
+        long fsize;
+        FILE *fp = fopen(s.fileNameBuffer, "rb");
+        //printf("filename: %s", filename);
+        if(fp != NULL) {
+                fseek(fp, 0, SEEK_END);
+                fsize = ftell(fp);
+                fseek(fp, 0, SEEK_SET);
+                //allocate space for txt string
+                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
+                fread(s.fileBuffer, fsize, 1, fp);
+                if( ferror(fp) !=0) {
+                        error("SERVER: ERROR reading plain text file\n");
+                }
+                //strip new line, replace with end of line characters
+                s.fileBuffer[fsize-1] = '\0';
+                s.fileBuffer[fsize] = '\0';
+                fclose(fp);
+        }
+        else{
+                printf("File not found sending error message to %s:%s",
+                       s.hostNameBuffer, s.originPortBuffer);
+                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
+                strcat(s.fileBuffer, "FILE NOT FOUND" );
+        }
+}
+
+
+/*********************************************************************
+** Description: opens directory and appends all fileNames
+**
+*********************************************************************/
+/* Source: https://stackoverflow.com/questions/4204666/how-to-list-files-in-a-directory-in-a-c-program*/
+void getDirList(){
+        DIR *d;
+        struct dirent *dir;
+        d = opendir(".");
+
+        if (d) {
+                memset(s.dirBuffer, '\0', sizeof(s.dirBuffer));
+                while((dir = readdir(d)) !=NULL) {
+                        /*printf("%s\n", dir->d_name);
+                           strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], dir->d_name);
+                           strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], " ");*/
+                        strcat(s.dirBuffer, dir->d_name);
+                        strcat(s.dirBuffer, " ");
+                }
+                closedir(d);
+        }
 }
 
 
@@ -92,7 +165,6 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
                                    sizeof(s.portBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                //printf("Requested port %s\n", s.portBuffer);
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
         }
@@ -145,6 +217,7 @@ void getResponse(int type)
 void sendMessage(int type){
         // Check for errors
         if(type == directory) {
+                getDirList();
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
                 //printf("amount %d\n", amount);
@@ -152,23 +225,11 @@ void sendMessage(int type){
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
-                //itoa(amount, s.amountBuffer, 10);
-                // send amount buffer to the server
-                //printf("Sending amount!");
+
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(data);
-                getTxt();
-                //printf("%s\n", s.dirBuffer);
-                amount = (int)strlen(s.dirBuffer);
-                //printf("amount %d\n", amount);
-                // clear out amount to send buffer
-                memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
-                // store amount in amountBuffer
-                sprintf(s.amountBuffer, "%d", amount);
-                //itoa(amount, s.amountBuffer, 10);
-                // send amount buffer to the server
-                //printf("Sending amount!");
+
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
@@ -177,16 +238,21 @@ void sendMessage(int type){
 
         }
         else if( type == file) {
+                //first message to send is a bogus amount
+                s.charsWritten = (int)send(s.dataSocketFD, "0",2, 0);
+                //next get the filename
+                getResponse(filename);
+                //look for file
+                getText();
                 // get buffer amount
                 int amount = (int)strlen(s.fileBuffer);
-                //printf("amount %d\n", amount);
                 // clear out amount to send buffer
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
-                getResponse(filename);
+                getResponse(data); 
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
         }
         else if( type == confirmation) {
@@ -248,55 +314,8 @@ void validate(int type){
         }
 }
 
-/*********************************************************************
-** Description: opens directory and appends all fileNames
-**
-*********************************************************************/
-/* Source: https://stackoverflow.com/questions/4204666/how-to-list-files-in-a-directory-in-a-c-program*/
-void getDirList(){
-        DIR *d;
-        struct dirent *dir;
-        d = opendir(".");
 
-        if (d) {
-                memset(s.dirBuffer, '\0', sizeof(s.dirBuffer));
-                while((dir = readdir(d)) !=NULL) {
-                        /*printf("%s\n", dir->d_name);
-                           strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], dir->d_name);
-                           strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], " ");*/
-                        strcat(s.dirBuffer, dir->d_name);
-                        strcat(s.dirBuffer, " ");
-                }
-                closedir(d);
-        }
-}
 
-void getText(){
-        long fsize;
-        FILE *fp = fopen(s.fileNameBuffer, "rb");
-        //printf("filename: %s", filename);
-        if(fp != NULL) {
-                fseek(fp, 0, SEEK_END);
-                fsize = ftell(fp);
-                fseek(fp, 0, SEEK_SET);
-                //allocate space for txt string
-                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
-                fread(s.fileBuffer, fsize, 1, fp);
-                if( ferror(fp) !=0) {
-                        error("SERVER: ERROR reading plain text file\n");
-                }
-                //strip new line, replace with end of line characters
-                s.fileBuffer[fsize-1] = '\0';
-                s.fileBuffer[fsize] = '\0';
-                fclose(fp);
-        }
-        else{
-                printf("File not found sending error message to %s:%s",
-                       s.hostNameBuffer, s.originPortBuffer);
-                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
-                strcat(s.fileBuffer, "FILE NOT FOUND" );
-        }
-}
 
 
 /*********************************************************************
