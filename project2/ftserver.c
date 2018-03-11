@@ -129,7 +129,7 @@ void getResponse(int type)
         }
         else if(type == data){
           memset(s.buffer, '\0', sizeof(s.buffer));
-          s.charsRead = recv(s.dataSocketFDFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
+          s.charsRead = recv(s.dataSocketFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
           if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
         }
 
