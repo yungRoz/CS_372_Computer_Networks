@@ -91,6 +91,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
                                    sizeof(s.portBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+                printf("Here is the requested port %s", s.portBuffer);
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
         }
