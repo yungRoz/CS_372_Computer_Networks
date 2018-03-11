@@ -145,10 +145,10 @@ void sendMessage(int type){
                 sprintf(s.amountBuffer, "%d", amount);
                 // send amount buffer to the server
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
-                                           strlen(s.amountBuffer) + 1, 0);
-
+                                           strlen(s.amountBuffer)+1, 0);
+                getResponse(ignore);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
-                s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer), 0);
+                s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 int checkSend = -5;
                 do {
                         // check send buffer for the dataSocket
@@ -158,7 +158,7 @@ void sendMessage(int type){
 
         }
         else if( type == file) {
-                s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer), 0);
+                s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
                 int checkSend = -5;
                 do {
                         // check send buffer for the dataSocket
