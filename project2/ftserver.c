@@ -328,6 +328,7 @@ void acceptConnections(){
                         sendMessage(confirmation);
 
                         if(s.cmnd == list) {
+                                sleep(3);
                                 setUpSConnect();
                                 //get list of directory contents
                                 getDirList();
