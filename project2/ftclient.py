@@ -82,7 +82,7 @@ class Messenger:
     # listen for server
 
     def listenForServer(self):
-        print("listening on port " + self.dport)
+        print("listening on port " + str(self.dport))
         self.serverSocket.bind(('', self.dport))
         self.serverSocket.listen(1)
 
