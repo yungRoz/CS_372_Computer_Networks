@@ -99,7 +99,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.commandBuffer,
                                    sizeof(s.commandBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                if( strcmp(s.commandBuffer, '-l') == 0) {
+                if( strcmp(s.commandBuffer, "-l") == 0) {
                         printf("List directory requested on pornt %s. \n", s.portBuffer);
                 }
         }
@@ -109,7 +109,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
                                    sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                strcat(s.hostNameBuffer, ".engr.oregonstate.edu", strlen(s.hostNameBuffer));
+                strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
@@ -259,7 +259,7 @@ void getDirList(){
                            strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], dir->d_name);
                            strcpy(s.dirBuffer[strlen(s.dirBuffer)-1], " ");*/
                         strcat(s.dirBuffer, dir->d_name);
-                        strcat(s.dirBuffer, " ", strlen(s.dirBuffer));
+                        strcat(s.dirBuffer, " ");
                 }
                 closedir(d);
         }
@@ -378,8 +378,8 @@ int main(int argc, const char* argv[]){
         }
         else {    // set up portNumber and hostName
                 s.portNumber = atoi(argv[1]);
-                //memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
-                //strcat(s.originPortBuffer, argv[1]);
+                memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
+                strcat(s.originPortBuffer, argv[1]);
                 printf("Server open on %s\n", argv[1]);
         }
         //set up server for listening
