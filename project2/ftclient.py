@@ -234,6 +234,10 @@ if __name__ == '__main__':
         dataSocket.sendMessage('received amount')
         # get message containing directories
         message = dataSocket.getMessage()
-        print(message)
+        with open(myargs['filename'], 'w+') as f:
+            # Note that f has now been truncated to 0 bytes, so you'll only
+            # be able to read data that you wrote earlier...
+            f.write(message)
+        print("Message written to file!\n\n")
     dataSocket.close()
     client.close()

@@ -200,9 +200,9 @@ void sendMessage(int type){
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(data);
 
-                s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
-                                           strlen(s.amountBuffer)+1, 0);
-                if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
+                //s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
+                //                           strlen(s.amountBuffer)+1, 0);
+                //if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
 
