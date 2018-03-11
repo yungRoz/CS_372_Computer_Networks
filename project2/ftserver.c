@@ -175,7 +175,7 @@ void getResponse(int type)
                 memset(s.fileNameErrScrnMessage,'\0', sizeof(s.fileNameErrScrnMessage));
                 memset(s.successFileMessage, '\0', sizeof(s.successFileMessage));
                 memset(s.successDirMessage, '\0', sizeof(s.successDirMessage));
-                sprintf(s.successFileMessage,"Sending file contents to %s:", hostNameBuffer)
+                sprintf(s.successFileMessage,"Sending file contents to %s:", s.hostNameBuffer);
                 sprintf(s.successDirMessage, "Sending directory contents to %s:", s.hostNameBuffer);
                 sprintf(s.fileNameErrScrnMessage, "File not found sending error message to %s:", s.hostNameBuffer);
                 strcat(s.fileNameErrScrnMessage, s.originPortBuffer);
@@ -211,7 +211,7 @@ void sendMessage(int type){
         // Check for errors
         if(type == directory) {
                 getDirList();
-                printf("%s\n",s.successDirMessage); 
+                printf("%s\n",s.successDirMessage);
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
                 //printf("amount %d\n", amount);
