@@ -16,15 +16,15 @@ from socket import *
 
 def getopts(argv):
     opts = {}  # Empty dictionary to store key-value pairs.
-    opts['serverHost'] = argv[1] + '.engr.oregonstate.edu'
-    opts['serverPort'] = int(argv[2])
-    opts['command'] = argv[3]
+    opts['serverHost'] = argv[2] + '.engr.oregonstate.edu'
+    opts['serverPort'] = int(argv[3])
+    opts['command'] = argv[4]
     if opts['command'] is '-l':
-        opts['dataPort'] = int(argv[4])
-        opts['filname'] = None
-    else:
         opts['dataPort'] = int(argv[5])
-        opts['filname'] = argv[4]
+        opts['filename'] = None
+    else:
+        opts['dataPort'] = int(argv[6])
+        opts['filename'] = argv[5]
     return opts
 
 
