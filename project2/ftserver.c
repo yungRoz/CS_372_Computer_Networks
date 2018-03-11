@@ -301,13 +301,14 @@ void setUpSConnect()
         printf("Connected to client\n");
         //get list of directory contents
         getDirList();
+        printf("Sending directory!\n"); 
         //send initial message connecting to client
-        sendMessage(confirmation);
+        //sendMessage(confirmation);
         // client sends back request for
         // directories, just ignore because they will be
         // sent
-        getResponse(ignore);
-        sendMessage(directory); 
+        //getResponse(ignore);
+        sendMessage(directory);
 }
 
 /*********************************************************************
