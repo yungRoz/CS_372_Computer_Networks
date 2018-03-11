@@ -101,7 +101,7 @@ class Messenger:
         amnt = amnt.decode()
         amnt = int(amnt.split('\x00')[0])
         self.amnt = amnt
-        print(amnt) 
+        print(amnt)
 
     # gets the incoming message relating to the incoming ammount
     # stores this as an int in self.amnt, the 1000 amount is
@@ -128,6 +128,7 @@ class Messenger:
         read = 0
         fullMessage = ""
         while len(fullMessage) < self.amnt:
+            print(len(fullMessage), " ", self.amnt)
             portion = self.connectionSocket.recv(10)
             portionDecoded = portion.decode()
             fullMessage += portionDecoded

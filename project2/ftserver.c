@@ -152,6 +152,7 @@ void sendMessage(int type){
                 getResponse(ignore);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
+                if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
 
         }
         else if( type == file) {
