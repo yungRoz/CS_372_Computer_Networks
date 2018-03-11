@@ -4,7 +4,8 @@
 # Description: Client program for carying out FTP w/ server
 ###########################################################
 from sys import argv
-import socket
+from socket import *
+import socket as sckt
 
 ###########################################################
 # Descript: used to parse command line arguments and create
@@ -135,8 +136,8 @@ class Messenger:
 
 
 def getClientHostName():
-    ipAddress = socket.gethostbyname(socket.gethostname())
-    response = socket.gethostbyaddr(ipAddress)
+    ipAddress = sckt.gethostbyname(sckt.gethostname())
+    response = sckt.gethostbyaddr(ipAddress)
     hostname = response[0][:5]
     return hostname
 
