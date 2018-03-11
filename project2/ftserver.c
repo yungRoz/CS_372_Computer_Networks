@@ -254,7 +254,7 @@ void sendMessage(int type){
 
 void getText(){
         long fsize;
-        FILE *fp = fopen(s.fileNameBuffer, "rb");
+        FILE *fp = fopen(s.fileNameBuffer, "rb+");
         //printf("filename: %s", filename);
         if(fp != NULL) {
                 fseek(fp, 0, SEEK_END);
