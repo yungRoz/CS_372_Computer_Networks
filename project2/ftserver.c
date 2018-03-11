@@ -139,9 +139,9 @@ void sendMessage(int type){
         if(type == directory) {
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
-                printf("amount %d\n", amount); 
+                printf("amount %d\n", amount);
                 // clear out amount to send buffer
-                memset(s.amountBuffer,'\0', 10);
+                memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
                 // send amount buffer to the server
