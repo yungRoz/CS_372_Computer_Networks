@@ -143,7 +143,8 @@ void sendMessage(int type){
                 // clear out amount to send buffer
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
-                sprintf(s.amountBuffer, "%d", amount);
+                //sprintf(s.amountBuffer, "%d", amount);
+                itoa(amount, s.amountBuffer, 10);
                 // send amount buffer to the server
                 printf("Sending amount!");
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
