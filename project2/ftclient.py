@@ -209,10 +209,11 @@ if __name__ == '__main__':
     # wait for connect and then receive the amount
     check = dataSocket.waitAndRecAmnt()
     # send back confirmation
-    dataSocket.sendMessage('received amount')
-    message = dataSocket.getMessage()
+
 
     if myargs['command'] == '-l':
+        dataSocket.sendMessage('received amount')
+        message = dataSocket.getMessage()
         # dataSocket.sendMessage('send directories')
         # dataSocket.getAmount()
         # datasocket.sendMessage('received amount')
@@ -222,11 +223,8 @@ if __name__ == '__main__':
         #messages = splitUpSpaces(message)
     else:
         dataSocket.sendMessage(myargs['filename'])
-        dataSocket.getAmount()
-        datasocket.sendMessage('received amount')
         # get message containing directories
         message = dataSocket.getMessage()
         print(message)
-    print("The server is ready to receive")
     dataSocket.close()
     client.close()

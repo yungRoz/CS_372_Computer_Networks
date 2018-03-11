@@ -73,7 +73,7 @@ int hostname_to_ip()
         {
                 //Return the first one;
                 strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
-                printf("IP: %s\n", s.ipBuffer);
+                //printf("IP: %s\n", s.ipBuffer);
                 return 0;
         }
 
@@ -92,7 +92,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
                                    sizeof(s.portBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                printf("Requested port %s\n", s.portBuffer);
+                //printf("Requested port %s\n", s.portBuffer);
                 // change portNumber for upcoming dataSocket
                 s.portNumber = atoi(s.portBuffer);
         }
@@ -101,7 +101,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.commandBuffer,
                                    sizeof(s.commandBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                printf("Command %s\n");
+                //printf("Command %s\n");
                 if( strcmp(s.commandBuffer, "-l") == 0) {
                         printf("List directory requested on port %s. \n", s.portBuffer);
                 }
@@ -112,14 +112,17 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
                                    sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                printf("Connection from %s\n", s.hostNameBuffer);
+                //printf("Connection from %s\n", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 //s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
+
+
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
-                strncpy(s.fileNameBuffer, s.buffer, sizeof(s.buffer));
+                s.charsRead = recv(s.dataSocketFD, s.fileNameBuffer, sizeof(s.fileNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 printf("File \"%s\" requested on port %s.\n", s.fileNameBuffer, s.portBuffer);
         }
         else if(type == ignore){
@@ -144,7 +147,7 @@ void sendMessage(int type){
         if(type == directory) {
                 // get buffer amount
                 int amount = (int)strlen(s.dirBuffer);
-                printf("amount %d\n", amount);
+                //printf("amount %d\n", amount);
                 // clear out amount to send buffer
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
@@ -155,13 +158,23 @@ void sendMessage(int type){
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(data);
-                printf("%s\n", s.dirBuffer); 
+                //printf("%s\n", s.dirBuffer);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
 
         }
         else if( type == file) {
+                // get buffer amount
+                int amount = (int)strlen(s.fileBuffer);
+                //printf("amount %d\n", amount);
+                // clear out amount to send buffer
+                memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
+                // store amount in amountBuffer
+                sprintf(s.amountBuffer, "%d", amount);
+                s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
+                                           strlen(s.amountBuffer)+1, 0);
+                getResponse(filename);
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
         }
         else if( type == confirmation) {
@@ -278,7 +291,7 @@ void getText(){
 ** Description: set up the server to connect to the client for data
 ** transmission
 *********************************************************************/
-void setUpSConnect()
+void setUpSConnect(int type)
 {
         // Clear out the address struct
         memset((char*)&s.serverAddress, '\0', sizeof(s.serverAddress));
@@ -291,21 +304,22 @@ void setUpSConnect()
         // Set up the socket
         s.dataSocketFD = socket(AF_INET, SOCK_STREAM, 0); // Create the socket
         if (s.dataSocketFD < 0) error("CLIENT: ERROR opening socket");
-        printf("Connecting to client\n");
+        //printf("Connecting to client\n");
         // Connect to server address
         if (connect(s.dataSocketFD, (struct sockaddr*)&s.serverAddress, sizeof(s.serverAddress)) < 0)
                 error("CLIENT: ERROR connecting");
-        printf("Connected to client\n");
+        //printf("Connected to client\n");
         //get list of directory contents
-        getDirList();
-        printf("Sending directory!\n");
-        //send initial message connecting to client
-        //sendMessage(confirmation);
-        // client sends back request for
-        // directories, just ignore because they will be
-        // sent
-        //getResponse(ignore);
-        sendMessage(directory);
+        if(type==list){
+          getDirList();
+          //printf("Sending directory!\n");
+          sendMessage(directory);
+        }
+        else if(type==get){
+          getText();
+          sendMessage(file);
+        }
+
 }
 
 /*********************************************************************
@@ -314,10 +328,10 @@ void setUpSConnect()
 *********************************************************************/
 void acceptConnections(){
         while(1) {
-                printf("Waiting for connection...\n");
+                //printf("Waiting for connection...\n");
                 s.establishedConnectionFD = accept(s.listenSocketFD, NULL, NULL);
                 if(s.establishedConnectionFD < 0) error("Server: ERROR on accept");
-                printf("Received connection!!\n");
+                //printf("Received connection!!\n");
                 // fork process for multi-threading support
                 //s.pid = fork();
                 // if no errors in forking
@@ -341,8 +355,8 @@ void acceptConnections(){
 
                         if(s.cmnd == list) {
                                 sleep(1);
-                                printf("READY TO CONNECT\n");
-                                setUpSConnect();
+                                //printf("READY TO CONNECT\n");
+                                setUpSConnect(list);
                                 /*printf("CONNECTED!");
                                 //get list of directory contents
                                 getDirList();
