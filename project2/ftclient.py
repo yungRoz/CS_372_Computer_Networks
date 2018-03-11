@@ -205,7 +205,7 @@ if __name__ == '__main__':
         client.sendMessage('received amount')
         allClear = client.getMessage()
         if "Got" not in allClear:
-            print(argv[1]+":"+str(myargs['dataPort']+ " says " + allClear)
+            print(argv[1]+":"+str(myargs['dataPort'])+ " says " + allClear)
             exit(1)
 
     # set up messenger device for inner data connection
