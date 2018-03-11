@@ -223,6 +223,7 @@ if __name__ == '__main__':
         #messages = splitUpSpaces(message)
     else:
         dataSocket.sendMessage(myargs['filename'])
+        check = dataSocket.getIncomingAmount()
         # get message containing directories
         message = dataSocket.getMessage()
         print(message)

@@ -345,7 +345,7 @@ void acceptConnections(){
                 // if no errors in forking
                 if(1) { //s.pid==0) {
                        //close the socket we waited on
-                        close(s.listenSocketFD);
+                        //close(s.listenSocketFD);
                         // get the client host name
                         getResponse(hostName);
                         sendMessage(confirmation);
@@ -383,8 +383,8 @@ void acceptConnections(){
                         else{
                                 error("ERROR: validating command.");
                         }
-                        close(s.establishedConnectionFD);
                         close(s.dataSocketFD);
+                        close(s.establishedConnectionFD);
                 }
         }
 }
