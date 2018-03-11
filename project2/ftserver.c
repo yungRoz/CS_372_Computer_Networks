@@ -369,13 +369,7 @@ void acceptConnections(){
                                 sendMessage(directory);*/
                         }
                         else if(s.cmnd == get) {
-                                setUpSConnect();
-                                getText();
-                                sendMessage(confirmation);
-                                getResponse(filename);
-                                sendMessage(confirmation);
-                                getResponse(ignore);
-                                sendMessage(file);
+                                setUpSConnect(get);
                         }
                         else{
                                 error("ERROR: validating command.");
