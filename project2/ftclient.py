@@ -133,12 +133,12 @@ class Messenger:
     def close(self):
         self.connectionSocket.close()
 
-    def getClientHostName(self):
-        ipAddress = socket.gethostbyname(socket.gethostname)
-        response = socket.gethostbyaddr(ipAddress)
-        hostname = response[0][:5]
-        return hostname
 
+def getClientHostName():
+    ipAddress = socket.gethostbyname(socket.gethostname)
+    response = socket.gethostbyaddr(ipAddress)
+    hostname = response[0][:5]
+    return hostname
 
 if __name__ == '__main__':
     from sys import argv
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     # set up messenger device for outer client connection
     client = Messenger(myargs)
-    clientHostName = client.getClientHostName()
+    clientHostName = getClientHostName()
     # set up socket
     client.setUpSocket()
     # connect
