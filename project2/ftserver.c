@@ -367,10 +367,10 @@ int main(int argc, const char* argv[]){
                 exit(0);
         }
         else {    // set up portNumber and hostName
-                s.portNumber = atoi(argv[2]);
+                s.portNumber = atoi(argv[1]);
                 memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
-                strcat(s.originPortBuffer, argv[2]);
-                printf("Server open on %s", argv[2]);
+                strcat(s.originPortBuffer, argv[1]);
+                printf("Server open on %s", argv[1]);
         }
         //set up server for listening
         //setUpS();
