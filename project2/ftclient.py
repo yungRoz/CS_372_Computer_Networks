@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     # set up messenger device for outer client connection
     client = Messenger(myargs)
-    clientHostName = clientGetHostName
+    clientHostName = client.getClientGetHostName
     # set up socket
     client.setUpSocket()
     # connect
