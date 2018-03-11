@@ -252,7 +252,7 @@ void sendMessage(int type){
                 sprintf(s.amountBuffer, "%d", amount);
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
-                getResponse(data); 
+                getResponse(data);
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
         }
         else if( type == confirmation) {
@@ -342,7 +342,7 @@ void setUpSConnect(int type)
         //printf("Connected to client\n");
         //get list of directory contents
         if(type==list){
-          getDirList();
+          //getDirList();
           //printf("Sending directory!\n");
           sendMessage(directory);
         }
@@ -405,8 +405,8 @@ void acceptConnections(){
                         else{
                                 error("ERROR: validating command.");
                         }
-                        close(s.dataSocketFD);
                         close(s.establishedConnectionFD);
+                        close(s.dataSocketFD);
                 }
         }
 }
