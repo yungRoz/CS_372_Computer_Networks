@@ -224,6 +224,7 @@ if __name__ == '__main__':
     else:
         dataSocket.sendMessage(myargs['filename'])
         check = dataSocket.getIncomingAmount()
+        dataSocket.sendMessage('received amount')
         # get message containing directories
         message = dataSocket.getMessage()
         print(message)
