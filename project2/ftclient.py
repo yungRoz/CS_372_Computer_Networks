@@ -212,7 +212,7 @@ if __name__ == '__main__':
     dataSocket.sendMessage('received amount')
     message = dataSocket.getMessage()
 
-    if myargs['command'] is '-l':
+    if myargs['command'] == '-l':
         # dataSocket.sendMessage('send directories')
         # dataSocket.getAmount()
         # datasocket.sendMessage('received amount')
