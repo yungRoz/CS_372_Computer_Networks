@@ -69,6 +69,7 @@ class Messenger:
     def __init__(self, args):
         self.pnum = args['serverPort']
         self.hname = args['serverHost']
+        self.dport = args['dataPort']
 
     # set up the socket
     def setUpSocket(self):
@@ -81,7 +82,7 @@ class Messenger:
     # listen for server
 
     def listenForServer(self):
-        self.serverSocket.bind(('', self.pnum))
+        self.serverSocket.bind(('', self.dport))
         self.serverSocket.listen(1)
 
     # wait for connection and incoming messages
