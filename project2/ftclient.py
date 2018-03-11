@@ -173,7 +173,7 @@ if __name__ == '__main__':
     allClear = client.getMessage()  # should be "Got" message from server
 
     # send port number message
-    client.sendMessage(str(myargs['serverPort']))
+    client.sendMessage(str(myargs['dataPort']))
     # get incoming amount for confirmation message
     check = client.getIncomingAmount()
     # send message that amount was received
