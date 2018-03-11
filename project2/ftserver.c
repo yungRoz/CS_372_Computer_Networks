@@ -68,11 +68,12 @@ int hostname_to_ip()
         }
 
         addr_list = (struct in_addr **) he->h_addr_list;
-
+        memset(s.ipBuffer, '\0', sizeof(s.ipBuffer));
         for(i = 0; addr_list[i] != NULL; i++)
         {
                 //Return the first one;
                 strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
+                print("IP: %s", s.ipBuffer);
                 return 0;
         }
 
@@ -113,7 +114,7 @@ void getResponse(int type)
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 printf("Connection from %s\n", s.hostNameBuffer);
                 strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
-                //if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
+                if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
                 s.serverHostInfo = gethostbyname(s.hostNameBuffer);
         }
         else if(type == filename) {
@@ -226,8 +227,8 @@ void setUpSConnect()
         s.serverAddress.sin_family = AF_INET;
         // Store the port number
         s.serverAddress.sin_port = htons(s.portNumber);
-        // Copy in the address
-        memcpy((char*)&s.serverAddress.sin_addr.s_addr, (char*)s.serverHostInfo->h_addr, s.serverHostInfo->h_length);
+        s.serverAddress.sin_addr.s_addr = inet_addr(s.ipBuffer);
+
         // Set up the socket
         s.dataSocketFD = socket(AF_INET, SOCK_STREAM, 0); // Create the socket
         if (s.dataSocketFD < 0) error("CLIENT: ERROR opening socket");
