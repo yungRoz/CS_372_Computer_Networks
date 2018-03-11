@@ -127,6 +127,11 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
         }
+        else if(type == data){
+          memset(s.buffer, '\0', sizeof(s.buffer));
+          s.charsRead = recv(s.dataSocketFDFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
+          if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+        }
 
 }
 
@@ -146,10 +151,10 @@ void sendMessage(int type){
                 sprintf(s.amountBuffer, "%d", amount);
                 //itoa(amount, s.amountBuffer, 10);
                 // send amount buffer to the server
-                printf("Sending amount!");
+                //printf("Sending amount!");
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
-                getResponse(ignore);
+                getResponse(data);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
