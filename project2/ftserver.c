@@ -280,7 +280,7 @@ void getText(){
                 printf("%s\n", s.fileNameErrScrnMessage);
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
                 strcat(s.fileBuffer, "FILE NOT FOUND" );
-                s.noError = 0; 
+                s.noError = 0;
                 sendMessage(filename);
         }
 }
@@ -393,7 +393,7 @@ void acceptConnections(){
                         // send confirmation of receipt
                         sendMessage(confirmation);
                         if(s.cmnd == get) {
-                                getMessage(fileName);
+                                getResponse(filename);
                                 getText();
                         }
 
