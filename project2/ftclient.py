@@ -130,7 +130,7 @@ class Messenger:
             read += len(portionDecoded)
         # remove new line characters
         fullMessage = fullMessage.replace("\n", "")
-        print(fullMessage) 
+        print(fullMessage)
         return fullMessage
 
     # closes connection
@@ -141,7 +141,7 @@ class Messenger:
 def getClientHostName():
     ipAddress = sckt.gethostbyname(sckt.gethostname())
     response = sckt.gethostbyaddr(ipAddress)
-    hostname = response[0][:6]
+    hostname = response[0][:5]
     return hostname
 
 if __name__ == '__main__':

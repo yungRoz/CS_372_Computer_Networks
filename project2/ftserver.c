@@ -35,7 +35,7 @@ struct  Ftserver
         struct sockaddr_in serverAddress, clientAddress;
         char buffer[1500], portBuffer[20], commandBuffer[5], amountBuffer[10];
         char fileNameBuffer[20], dirBuffer[20000], fileBuffer[100000];
-        char hostNameBuffer[5], originPortBuffer[10], ipBuffer[100];
+        char hostNameBuffer[10], originPortBuffer[10], ipBuffer[100];
 
 };
 
@@ -102,7 +102,7 @@ void getResponse(int type)
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 printf("Command %s\n");
                 if( strcmp(s.commandBuffer, "-l") == 0) {
-                        printf("List directory requested on pornt %s. \n", s.portBuffer);
+                        printf("List directory requested on port %s. \n", s.portBuffer);
                 }
         }
         else if(type == hostName) {
@@ -121,7 +121,7 @@ void getResponse(int type)
                 strncpy(s.fileNameBuffer, s.buffer, sizeof(s.buffer));
                 printf("File \"%s\" requested on port %s.\n", s.fileNameBuffer, s.portBuffer);
         }
-        else{
+        else if(typs == ignore){
                 memset(s.buffer, '\0', sizeof(s.buffer));
                 s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
