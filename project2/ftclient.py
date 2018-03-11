@@ -205,7 +205,7 @@ if __name__ == '__main__':
         client.sendMessage('received amount')
         allClear = client.getMessage()
         if "Got" not in allClear:
-            print(argv[1]+":"+str(myargs['dataPort'])+ " says " + allClear)
+            print("\n" + argv[1]+":"+str(myargs['dataPort'])+ " says " + allClear + "\n\n")
             exit(1)
 
     # set up messenger device for inner data connection
@@ -221,25 +221,26 @@ if __name__ == '__main__':
 
     if myargs['command'] == '-l':
         dataSocket.sendMessage('received amount')
+        print("\n\nReceiving directory structure from" + argv[1] + ":" + str(myargs['dataPort']) + "\n\n")
         message = dataSocket.getMessage()
         # dataSocket.sendMessage('send directories')
         # dataSocket.getAmount()
         # datasocket.sendMessage('received amount')
         # get message containing directories
         #message = dataSocket.getMessage()
-        print("Receiving directory structure from" + argv[1] + ":" + str(myargs['dataPort']))
+        message = message.replace(" ", "\n")
         print(message)
         #messages = splitUpSpaces(message)
     else:
         #check = dataSocket.getIncomingAmount()
         dataSocket.sendMessage('received amount')
+        print("\n\nReceiving " + myargs['filename'] + " from " + argv[1] + ":" + str(myargs['dataPort']))
         # get message containing directories
         message = dataSocket.getMessage()
         with open(myargs['filename'], 'w+') as f:
             # Note that f has now been truncated to 0 bytes, so you'll only
             # be able to read data that you wrote earlier...
             f.write(message)
-        print("Receiving " + myargs['filename'] + " from" + argv[1] + ":" + str(myargs['dataPort']))
         print("File transfer complete!\n\n")
     dataSocket.close()
     client.close()
