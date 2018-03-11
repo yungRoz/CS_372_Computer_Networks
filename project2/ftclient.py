@@ -200,7 +200,7 @@ if __name__ == '__main__':
         print(allClear)
         exit(1)
     if myargs['command'] == '-g':
-        client.sendMessage(myargs['fileName'])
+        client.sendMessage(myargs['filename'])
         check = client.getIncomingAmount()
         client.sendMessage('received amount')
         allClear = client.getMessage()
