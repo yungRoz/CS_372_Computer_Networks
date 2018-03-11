@@ -373,7 +373,7 @@ int main(int argc, const char* argv[]){
                 printf("Server open on %s", argv[2]);
         }
         //set up server for listening
-        setUpS();
+        //setUpS();
         setUpSListen();
         //wait for and process connections
         acceptConnections();
