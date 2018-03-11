@@ -221,7 +221,7 @@ if __name__ == '__main__':
 
     if myargs['command'] == '-l':
         dataSocket.sendMessage('received amount')
-        print("\n\nReceiving directory structure from" + argv[1] + ":" + str(myargs['dataPort']) + "\n\n")
+        print("\n\nReceiving directory structure from " + argv[1] + ":" + str(myargs['dataPort']) + "\n")
         message = dataSocket.getMessage()
         # dataSocket.sendMessage('send directories')
         # dataSocket.getAmount()
