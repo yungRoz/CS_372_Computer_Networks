@@ -262,7 +262,7 @@ void getDirList(){
 void getText(){
         long fsize;
         FILE *fp = fopen(s.fileNameBuffer, "rb");
-        printf("filename: %s", filename);
+        //printf("filename: %s", filename);
         if(fp != NULL) {
                 fseek(fp, 0, SEEK_END);
                 fsize = ftell(fp);
@@ -369,7 +369,7 @@ void acceptConnections(){
                                 sendMessage(directory);*/
                         }
                         else if(s.cmnd == get) {
-                                sleep(1); 
+                                sleep(1);
                                 setUpSConnect(get);
                         }
                         else{
