@@ -216,29 +216,7 @@ void setUpSListen()
 
         //s.sizeOfClientInfo = sizeof(s.clientAddress);
 }
-/*********************************************************************
-** Description: set up the server to connect to the client for data
-** transmission
-*********************************************************************/
-void setUpSConnect()
-{
-        // Clear out the address struct
-        memset((char*)&s.serverAddress, '\0', sizeof(s.serverAddress));
-        // Create a network-capable socket
-        s.serverAddress.sin_family = AF_INET;
-        // Store the port number
-        s.serverAddress.sin_port = htons(s.portNumber);
-        s.serverAddress.sin_addr.s_addr = inet_addr(s.ipBuffer);
 
-        // Set up the socket
-        s.dataSocketFD = socket(AF_INET, SOCK_STREAM, 0); // Create the socket
-        if (s.dataSocketFD < 0) error("CLIENT: ERROR opening socket");
-        printf("Connecting to client\n");
-        // Connect to server address
-        if (connect(s.dataSocketFD, (struct sockaddr*)&s.serverAddress, sizeof(s.serverAddress)) < 0)
-                error("CLIENT: ERROR connecting");
-        printf("Connected to client\n"); 
-}
 
 void validate(int type){
         if(type == command) {
@@ -296,6 +274,40 @@ void getText(){
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
                 strcat(s.fileBuffer, "FILE NOT FOUND" );
         }
+}
+
+
+/*********************************************************************
+** Description: set up the server to connect to the client for data
+** transmission
+*********************************************************************/
+void setUpSConnect()
+{
+        // Clear out the address struct
+        memset((char*)&s.serverAddress, '\0', sizeof(s.serverAddress));
+        // Create a network-capable socket
+        s.serverAddress.sin_family = AF_INET;
+        // Store the port number
+        s.serverAddress.sin_port = htons(s.portNumber);
+        s.serverAddress.sin_addr.s_addr = inet_addr(s.ipBuffer);
+
+        // Set up the socket
+        s.dataSocketFD = socket(AF_INET, SOCK_STREAM, 0); // Create the socket
+        if (s.dataSocketFD < 0) error("CLIENT: ERROR opening socket");
+        printf("Connecting to client\n");
+        // Connect to server address
+        if (connect(s.dataSocketFD, (struct sockaddr*)&s.serverAddress, sizeof(s.serverAddress)) < 0)
+                error("CLIENT: ERROR connecting");
+        printf("Connected to client\n");
+        //get list of directory contents
+        getDirList();
+        //send initial message connecting to client
+        sendMessage(confirmation);
+        // client sends back request for
+        // directories, just ignore because they will be
+        // sent
+        getResponse(ignore);
+        sendMessage(direc
 }
 
 /*********************************************************************
