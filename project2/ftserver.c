@@ -151,22 +151,10 @@ void sendMessage(int type){
                 getResponse(ignore);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
-                int checkSend = -5;
-                do {
-                        // check send buffer for the dataSocket
-                        // loops until send buffer is empty
-                        ioctl(s.dataSocketFD, TIOCOUTQ, &checkSend);
-                } while(checkSend > 0);
 
         }
         else if( type == file) {
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
-                int checkSend = -5;
-                do {
-                        // check send buffer for the dataSocket
-                        // loops until send buffer is empty
-                        ioctl(s.dataSocketFD, TIOCOUTQ, &checkSend);
-                } while(checkSend > 0);
         }
         else if( type == confirmation) {
                 if(s.cmnd == sendError) {

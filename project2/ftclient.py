@@ -208,12 +208,12 @@ if __name__ == '__main__':
     check = dataSocket.waitAndRecAmnt()
     # send back confirmation
     dataSocket.sendMessage('received amount')
-    dataSocket.getMessage()
+    message = dataSocket.getMessage()
 
     if myargs['command'] is '-l':
-        dataSocket.sendMessage('send directories')
-        dataSocket.getAmount()
-        datasocket.sendMessage('received amount')
+        # dataSocket.sendMessage('send directories')
+        # dataSocket.getAmount()
+        # datasocket.sendMessage('received amount')
         # get message containing directories
         message = dataSocket.getMessage()
         print(message)
