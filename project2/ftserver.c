@@ -26,13 +26,14 @@ enum types {name=0, port, message, initialMessage, server,
 struct  Ftserver
 {
         int listenSocketFD, establishedConnectionFD, dataSocketFD, portNumber, cmnd;
-        int charsRead, charsReadKey, charsReadTxt, dirCount, charsWritten;
+        int charsRead, charsReadKey, charsReadTxt, dirCount, charsWritten, noError;
         int pid;
         int i;
         int option;
         socklen_t sizeOfClientInfo;
         struct hostent* serverHostInfo;
         struct sockaddr_in serverAddress, clientAddress;
+        char iPortBuffer[10];
         char buffer[1500], fileNameErrScrnMessage[100], successFileMessage[100], successDirMessage[100], portBuffer[20], commandBuffer[5], amountBuffer[10];
         char fileNameBuffer[20], dirBuffer[20000], fileBuffer[100000];
         char hostNameBuffer[10], originPortBuffer[10], ipBuffer[100];
@@ -50,34 +51,7 @@ void error(const char *msg) {
         perror(msg); exit(EXIT_FAILURE);
 }
 
-void getText(){
-        long fsize;
-        FILE *fp = fopen(s.fileNameBuffer, "rb");
-        //printf("filename: %s", filename);
-        if(fp != NULL) {
-                fseek(fp, 0, SEEK_END);
-                fsize = ftell(fp);
-                fseek(fp, 0, SEEK_SET);
-                //allocate space for txt string
-                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
-                fread(s.fileBuffer, fsize, 1, fp);
-                if( ferror(fp) !=0) {
-                        error("SERVER: ERROR reading plain text file\n");
-                }
-                //strip new line, replace with end of line characters
-                s.fileBuffer[fsize-1] = '\0';
-                s.fileBuffer[fsize] = '\0';
-                fclose(fp);
-                // display success message on server screen
-                printf("%s\n", s.successFileMessage);
-        }
-        else{
-                // display error message on server screen
-                printf("%s\n", s.fileNameErrScrnMessage);
-                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
-                strcat(s.fileBuffer, "FILE NOT FOUND" );
-        }
-}
+
 
 
 /*********************************************************************
@@ -168,8 +142,7 @@ void getResponse(int type)
                 s.charsRead = recv(s.establishedConnectionFD, s.hostNameBuffer,
                                    sizeof(s.hostNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
-                //printf("Connection from %s\n", s.hostNameBuffer);
-                strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
+                printf("\n\nConnection from %s\n",s.hostNameBuffer);
                 // store hostname in all display message buffers
                 // this is to avoid a bug in hostname_to_ip
                 memset(s.fileNameErrScrnMessage,'\0', sizeof(s.fileNameErrScrnMessage));
@@ -178,7 +151,10 @@ void getResponse(int type)
                 sprintf(s.successFileMessage,"Sending file contents to %s:", s.hostNameBuffer);
                 sprintf(s.successDirMessage, "Sending directory contents to %s:", s.hostNameBuffer);
                 sprintf(s.fileNameErrScrnMessage, "File not found sending error message to %s:", s.hostNameBuffer);
-                strcat(s.fileNameErrScrnMessage, s.originPortBuffer);
+                strcat(s.fileNameErrScrnMessage, s.iPortBuffer);
+                //printf("Connection from %s\n", s.hostNameBuffer);
+                strcat(s.hostNameBuffer, ".engr.oregonstate.edu");
+
 
 
                 if(hostname_to_ip()) error("SERVER: ERROR transforming hostname to ip\n");
@@ -186,19 +162,19 @@ void getResponse(int type)
         }
         else if(type == filename) {
                 memset(s.fileNameBuffer, '\0', sizeof(s.fileNameBuffer));
-                s.charsRead = recv(s.dataSocketFD, s.fileNameBuffer, sizeof(s.fileNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                s.charsRead = recv(s.establishedConnectionFD, s.fileNameBuffer, sizeof(s.fileNameBuffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
                 printf("File \"%s\" requested on port %s.\n", s.fileNameBuffer, s.portBuffer);
         }
-        else if(type == ignore){
+        else if(type == ignore) {
                 memset(s.buffer, '\0', sizeof(s.buffer));
                 s.charsRead = recv(s.establishedConnectionFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
                 if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
         }
-        else if(type == data){
-          memset(s.buffer, '\0', sizeof(s.buffer));
-          s.charsRead = recv(s.dataSocketFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
-          if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
+        else if(type == data) {
+                memset(s.buffer, '\0', sizeof(s.buffer));
+                s.charsRead = recv(s.dataSocketFD, s.buffer, sizeof(s.buffer) - 1, 0); // Read data from the socket, leaving \0 at end
+                if (s.charsRead < 0) error("CLIENT: ERROR reading from socket");
         }
 
 }
@@ -233,11 +209,11 @@ void sendMessage(int type){
         }
         else if( type == file) {
                 //first message to send is a bogus amount
-                s.charsWritten = (int)send(s.dataSocketFD, "0",2, 0);
+                //s.charsWritten = (int)send(s.dataSocketFD, "0",2, 0);
                 //next get the filename
-                getResponse(filename);
+                //getResponse(filename);
                 //look for file
-                getText();
+                //getText();
                 // get buffer amount
                 int amount = (int)strlen(s.fileBuffer);
                 // clear out amount to send buffer
@@ -248,6 +224,16 @@ void sendMessage(int type){
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(data);
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
+        }
+        else if( type == filename) {
+                int amount = (int)strlen(s.fileBuffer);
+                memset(s.amountBuffer, '\0', sizeof(s.amountBuffer));
+                sprintf(s.amountBuffer, "%d", amount);
+                s.charsWritten = (int)send(s.establishedConnectionFD, s.amountBuffer,
+                                           strlen(s.amountBuffer)+1, 0);
+                getResponse(ignore);
+                s.charsWritten = send(s.establishedConnectionFD,
+                                      s.fileBuffer, strlen(s.fileBuffer)+1, 0);
         }
         else if( type == confirmation) {
                 if(s.cmnd == sendError) {
@@ -266,6 +252,38 @@ void sendMessage(int type){
         if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
 }
 
+void getText(){
+        long fsize;
+        FILE *fp = fopen(s.fileNameBuffer, "rb");
+        //printf("filename: %s", filename);
+        if(fp != NULL) {
+                fseek(fp, 0, SEEK_END);
+                fsize = ftell(fp);
+                fseek(fp, 0, SEEK_SET);
+                //allocate space for txt string
+                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
+                fread(s.fileBuffer, fsize, 1, fp);
+                if( ferror(fp) !=0) {
+                        error("SERVER: ERROR reading plain text file\n");
+                }
+                //strip new line, replace with end of line characters
+                s.fileBuffer[fsize-1] = '\0';
+                s.fileBuffer[fsize] = '\0';
+                fclose(fp);
+                // display success message on server screen
+                printf("%s\n", s.successFileMessage);
+                s.noError = 1;
+                sendMessage(confirmation);
+        }
+        else{
+                // display error message on server screen
+                printf("%s\n", s.fileNameErrScrnMessage);
+                memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
+                strcat(s.fileBuffer, "FILE NOT FOUND" );
+                s.noError = 0; 
+                sendMessage(filename);
+        }
+}
 
 /*********************************************************************
 ** Description: set up the server socket for listening
@@ -335,11 +353,11 @@ void setUpSConnect(int type)
                 error("CLIENT: ERROR connecting");
         //printf("Connected to client\n");
         //get list of directory contents
-        if(type==list){
-          sendMessage(directory);
+        if(type==list) {
+                sendMessage(directory);
         }
-        else if(type==get){
-          sendMessage(file);
+        else if(type==get) {
+                sendMessage(file);
         }
 
 }
@@ -358,7 +376,7 @@ void acceptConnections(){
                 //s.pid = fork();
                 // if no errors in forking
                 if(1) { //s.pid==0) {
-                       //close the socket we waited on
+                        //close the socket we waited on
                         //close(s.listenSocketFD);
                         // get the client host name
                         getResponse(hostName);
@@ -374,12 +392,16 @@ void acceptConnections(){
                         validate(command);
                         // send confirmation of receipt
                         sendMessage(confirmation);
+                        if(s.cmnd == get) {
+                                getMessage(fileName);
+                                getText();
+                        }
 
                         if(s.cmnd == list) {
                                 sleep(1);
                                 setUpSConnect(list);
                         }
-                        else if(s.cmnd == get) {
+                        else if(s.cmnd == get && s.noError) {
                                 sleep(1);
                                 setUpSConnect(get);
                         }
@@ -405,6 +427,8 @@ int main(int argc, const char* argv[]){
                 s.portNumber = atoi(argv[1]);
                 memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
                 strcat(s.originPortBuffer, argv[1]);
+                memset(s.iPortBuffer, '\0', sizeof(s.originPortBuffer));
+                strcat(s.iPortBuffer, argv[1]);
                 printf("Server open on %s\n", argv[1]);
         }
         //set up server for listening

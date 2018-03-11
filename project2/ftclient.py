@@ -96,7 +96,7 @@ class Messenger:
 
     def waitAndRecAmnt(self):
         self.connectionSocket, self.addr = self.serverSocket.accept()
-        print("CONNECTION RECEIVED!")
+        #print("CONNECTION RECEIVED!")
         amnt = self.connectionSocket.recv(10)
         amnt = amnt.decode()
         amnt = int(amnt.split('\x00')[0])
@@ -128,7 +128,7 @@ class Messenger:
         read = 0
         fullMessage = ""
         while len(fullMessage) < self.amnt:
-            print(len(fullMessage), " ", self.amnt)
+            #print(len(fullMessage), " ", self.amnt)
             portion = self.connectionSocket.recv(10)
             portionDecoded = portion.decode()
             fullMessage += portionDecoded
@@ -199,6 +199,14 @@ if __name__ == '__main__':
     if "Got" not in allClear:
         print(allClear)
         exit(1)
+    if myargs['command'] == '-g':
+        client.sendMessage(myargs['fileName'])
+        check = client.getIncomingAmount()
+        client.sendMessage('received amount')
+        allClear = client.getMessage()
+        if "Got" not in allClear:
+            print(allClear)
+            exit(1)
 
     # set up messenger device for inner data connection
     dataSocket = Messenger(myargs)
@@ -222,8 +230,7 @@ if __name__ == '__main__':
         print(message)
         #messages = splitUpSpaces(message)
     else:
-        dataSocket.sendMessage(myargs['filename'])
-        check = dataSocket.getIncomingAmount()
+        #check = dataSocket.getIncomingAmount()
         dataSocket.sendMessage('received amount')
         # get message containing directories
         message = dataSocket.getMessage()
