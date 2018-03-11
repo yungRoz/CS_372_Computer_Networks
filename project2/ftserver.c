@@ -73,7 +73,7 @@ int hostname_to_ip()
         {
                 //Return the first one;
                 strcpy(s.ipBuffer, inet_ntoa(*addr_list[i]) );
-                print("IP: %s", s.ipBuffer);
+                printf("IP: %s", s.ipBuffer);
                 return 0;
         }
 
