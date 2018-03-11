@@ -158,7 +158,19 @@ void sendMessage(int type){
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
                 getResponse(data);
+                getTxt();
                 //printf("%s\n", s.dirBuffer);
+                amount = (int)strlen(s.dirBuffer);
+                //printf("amount %d\n", amount);
+                // clear out amount to send buffer
+                memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
+                // store amount in amountBuffer
+                sprintf(s.amountBuffer, "%d", amount);
+                //itoa(amount, s.amountBuffer, 10);
+                // send amount buffer to the server
+                //printf("Sending amount!");
+                s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
+                                           strlen(s.amountBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
@@ -316,7 +328,6 @@ void setUpSConnect(int type)
           sendMessage(directory);
         }
         else if(type==get){
-          getText();
           sendMessage(file);
         }
 
