@@ -289,13 +289,14 @@ void getText(){
 *********************************************************************/
 void acceptConnections(){
         while(1) {
+                printf("Waiting for connection...\n");
                 s.establishedConnectionFD = accept(s.listenSocketFD, NULL, NULL);
                 if(s.establishedConnectionFD < 0) error("Server: ERROR on accept");
-
+                printf("Received connection!!\n");
                 // fork process for multi-threading support
-                s.pid = fork();
+                //s.pid = fork();
                 // if no errors in forking
-                if(s.pid==0) {
+                if(1){//s.pid==0) {
                         //close the socket we waited on
                         close(s.listenSocketFD);
                         // get the client host name
