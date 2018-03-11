@@ -105,6 +105,7 @@ class Messenger:
     def getIncomingAmount(self, data=False):
         amnt = self.connectionSocket.recv(10)
         amnt = amnt.decode()
+        print(amnt.split('\x00')[0])
         amnt = int(amnt.split('\x00')[0])
         self.amnt = amnt
 
@@ -129,6 +130,7 @@ class Messenger:
             read += len(portionDecoded)
         # remove new line characters
         fullMessage = fullMessage.replace("\n", "")
+        print(fullMessage) 
         return fullMessage
 
     # closes connection
@@ -139,7 +141,7 @@ class Messenger:
 def getClientHostName():
     ipAddress = sckt.gethostbyname(sckt.gethostname())
     response = sckt.gethostbyaddr(ipAddress)
-    hostname = response[0][:5]
+    hostname = response[0][:6]
     return hostname
 
 if __name__ == '__main__':
