@@ -368,9 +368,9 @@ int main(int argc, const char* argv[]){
         }
         else {    // set up portNumber and hostName
                 s.portNumber = atoi(argv[1]);
-                memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
-                strcat(s.originPortBuffer, argv[1]);
-                printf("Server open on %s", argv[1]);
+                //memset(s.originPortBuffer, '\0', sizeof(s.originPortBuffer));
+                //strcat(s.originPortBuffer, argv[1]);
+                printf("Server open on %s\n", argv[1]);
         }
         //set up server for listening
         //setUpS();
