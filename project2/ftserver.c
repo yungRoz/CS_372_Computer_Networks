@@ -17,8 +17,7 @@
 #include <time.h>
 #include <arpa/inet.h>
 
-//#include "socketHelpers.h"
-// input and message types
+// types for message sending and receiving
 enum types {name=0, port, message, initialMessage, server,
             ignore, client, command, list, get, sendError, confirmation,
             data, amount, directory, file, hostName, filename};
@@ -114,7 +113,12 @@ int hostname_to_ip()
 *********************************************************************/
 void getResponse(int type)
 {
-
+        // response types are split up by
+        // the buffer they use along with the
+        // socket they use to receive messages from
+        // but all follow a general order: buffer is cleared out,
+        // message from client is received into the buffers
+        // appropriate messenger variables are set
         if(type == port) {
                 memset(s.portBuffer, '\0', sizeof(s.portBuffer));
                 s.charsRead = recv(s.establishedConnectionFD, s.portBuffer,
@@ -180,11 +184,11 @@ void getResponse(int type)
 }
 
 /*********************************************************************
-** Description: send first message to server with client name prepended
-** depending on type: initialMessage or message
+** Description: send messages to client, type denotes the socket
+** and buffer to send
 *********************************************************************/
 void sendMessage(int type){
-        // Check for errors
+        // Each
         if(type == directory) {
                 getDirList();
                 printf("%s\n",s.successDirMessage);
@@ -195,78 +199,90 @@ void sendMessage(int type){
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
-
+                //send amount
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
+                if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
+                // get response
                 getResponse(data);
-
-                //s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
-                //                           strlen(s.amountBuffer)+1, 0);
-                //if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
+                // send directory contents
                 s.charsWritten = send(s.dataSocketFD, s.dirBuffer, strlen(s.dirBuffer)+1, 0);
                 if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
 
         }
         else if( type == file) {
-                //first message to send is a bogus amount
-                //s.charsWritten = (int)send(s.dataSocketFD, "0",2, 0);
-                //next get the filename
-                //getResponse(filename);
-                //look for file
-                //getText();
-                // get buffer amount
                 int amount = (int)strlen(s.fileBuffer);
                 // clear out amount to send buffer
                 memset(s.amountBuffer,'\0', sizeof(s.amountBuffer));
                 // store amount in amountBuffer
                 sprintf(s.amountBuffer, "%d", amount);
+                // send amount
                 s.charsWritten = (int)send(s.dataSocketFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
+                if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
+                // get response
                 getResponse(data);
+                // send file contents
                 s.charsWritten = send(s.dataSocketFD, s.fileBuffer, strlen(s.fileBuffer)+1, 0);
+                if (s.charsWritten < 0) error("CLIENT: ERROR sending amount");
         }
         else if( type == filename) {
                 int amount = (int)strlen(s.fileBuffer);
                 memset(s.amountBuffer, '\0', sizeof(s.amountBuffer));
                 sprintf(s.amountBuffer, "%d", amount);
+                // send amount
                 s.charsWritten = (int)send(s.establishedConnectionFD, s.amountBuffer,
                                            strlen(s.amountBuffer)+1, 0);
+                // get response
                 getResponse(ignore);
+                // send error message
                 s.charsWritten = send(s.establishedConnectionFD,
                                       s.fileBuffer, strlen(s.fileBuffer)+1, 0);
         }
         else if( type == confirmation) {
+                // respond with error message if invalid command is passed
                 if(s.cmnd == sendError) {
                         s.charsWritten = send(s.establishedConnectionFD, "22", 3, 0);
+                        if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
                         getResponse(ignore);
                         s.charsWritten = send(s.establishedConnectionFD,
                                               "ERROR: invalid command", 23, 0);
+                        if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
+
                 }
-                else {
+                else { // confirm receipt of message
                         s.charsWritten = send(s.establishedConnectionFD, "3", 2, 0);
+                        if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
                         getResponse(ignore);
                         s.charsWritten = send(s.establishedConnectionFD, "Got", 4, 0);
+                        if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
                 }
         }
 
         if (s.charsWritten < 0) error("CLIENT: ERROR writing to socket");
 }
 
+/*********************************************************************
+** Description: getText opens the file given by the fileNameBuffer
+** if file cannot be opened it, sends the appropriate message to the
+** client
+*********************************************************************/
 void getText(){
         long fsize;
         FILE *fp = fopen(s.fileNameBuffer, "rb+");
-        //printf("filename: %s", filename);
+        // printf("filename: %s", filename);
         if(fp != NULL) {
                 fseek(fp, 0, SEEK_END);
                 fsize = ftell(fp);
                 fseek(fp, 0, SEEK_SET);
-                //allocate space for txt string
+                // allocate space for file contents
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
+                // read in file contents
                 fread(s.fileBuffer, fsize, 1, fp);
                 if( ferror(fp) !=0) {
                         error("SERVER: ERROR reading plain text file\n");
                 }
-                //strip new line, replace with end of line characters
+                // strip new line, replace with end of line characters
                 s.fileBuffer[fsize-1] = '\0';
                 s.fileBuffer[fsize] = '\0';
                 fclose(fp);
@@ -278,15 +294,18 @@ void getText(){
         else{
                 // display error message on server screen
                 printf("%s\n", s.fileNameErrScrnMessage);
+                // file file buffer with error message for sending
                 memset(s.fileBuffer, '\0', sizeof(s.fileBuffer));
                 strcat(s.fileBuffer, "FILE NOT FOUND" );
                 s.noError = 0;
+                // send file buffer filename error message to client
                 sendMessage(filename);
         }
 }
 
 /*********************************************************************
-** Description: set up the server socket for listening
+** Description: set up the server socket for listening, used for initial
+** socket set up
 *********************************************************************/
 void setUpSListen()
 {
@@ -297,10 +316,7 @@ void setUpSListen()
         // Store the port number
         s.serverAddress.sin_port = htons(s.portNumber);
         s.serverAddress.sin_addr.s_addr = INADDR_ANY;
-        //setUpSListen();
         s.option=1;
-        //set up the socekt depending on type :
-        // create the socket, check for muteAllErrors
 
         s.listenSocketFD = socket(AF_INET, SOCK_STREAM, 0);
         if(s.listenSocketFD < 0) error("Server: ERROR opening socket");
@@ -314,10 +330,12 @@ void setUpSListen()
         // flip socket on and all to receive up to 5 connects
         if(listen(s.listenSocketFD, 5) == -1) error("Server: ERROR listening.");
 
-        //s.sizeOfClientInfo = sizeof(s.clientAddress);
 }
 
-
+/*********************************************************************
+** Description: evaluates passed command, sets command with sendError
+** flag of incorrect command was passed
+*********************************************************************/
 void validate(int type){
         if(type == command) {
                 if(strcmp(s.commandBuffer, "-l") == 0) s.cmnd = list;
@@ -334,7 +352,7 @@ void validate(int type){
 ** Description: set up the server to connect to the client for data
 ** transmission
 *********************************************************************/
-void setUpSConnect(int type)
+void setUpSConnect()
 {
         // Clear out the address struct
         memset((char*)&s.serverAddress, '\0', sizeof(s.serverAddress));
@@ -351,14 +369,7 @@ void setUpSConnect(int type)
         // Connect to server address
         if (connect(s.dataSocketFD, (struct sockaddr*)&s.serverAddress, sizeof(s.serverAddress)) < 0)
                 error("CLIENT: ERROR connecting");
-        //printf("Connected to client\n");
-        //get list of directory contents
-        if(type==list) {
-                sendMessage(directory);
-        }
-        else if(type==get) {
-                sendMessage(file);
-        }
+
 
 }
 
@@ -369,50 +380,61 @@ void setUpSConnect(int type)
 void acceptConnections(){
         while(1) {
                 //printf("Waiting for connection...\n");
+                //accept connections from client
                 s.establishedConnectionFD = accept(s.listenSocketFD, NULL, NULL);
                 if(s.establishedConnectionFD < 0) error("Server: ERROR on accept");
-                //printf("Received connection!!\n");
-                // fork process for multi-threading support
-                //s.pid = fork();
-                // if no errors in forking
-                if(1) { //s.pid==0) {
-                        //close the socket we waited on
-                        //close(s.listenSocketFD);
-                        // get the client host name
-                        getResponse(hostName);
-                        sendMessage(confirmation);
-                        // display connection from message
-                        //printf("Connection from %s\n", s.hostNameBuffer);
-                        // get the request port number
-                        getResponse(port);
-                        sendMessage(confirmation);
-                        // get the command arguments
-                        getResponse(command);
-                        // validate command
-                        validate(command);
-                        // send confirmation of receipt
-                        sendMessage(confirmation);
-                        if(s.cmnd == get) {
-                                getResponse(filename);
-                                getText();
-                        }
 
-                        if(s.cmnd == list) {
-                                sleep(1);
-                                setUpSConnect(list);
-                                close(s.dataSocketFD);
-                        }
-                        else if(s.cmnd == get && s.noError) {
-                                sleep(1);
-                                setUpSConnect(get);
-                                close(s.dataSocketFD);
 
-                        }
-                        else if (s.cmnd == sendError){
-                                printf("ERROR: validating command.\n");
-                        }
-                        close(s.establishedConnectionFD);
+                // get the client host name
+                getResponse(hostName);
+                // send confrimation message
+                sendMessage(confirmation);
+                // get the request port number
+                getResponse(port);
+                // send confirmation message
+                sendMessage(confirmation);
+                // get the command arguments
+                getResponse(command);
+                // validate command
+                validate(command);
+                // send confirmation of receipt
+                sendMessage(confirmation);
+
+                // if command is for file
+                if(s.cmnd == get) {
+                        // get the file name
+                        getResponse(filename);
+                        // get the file contents/check if it exists
+                        getText();
                 }
+
+                // if comand is for directory
+                if(s.cmnd == list) {
+                        // this was for a bug where the c program was attempting
+                        // to connect before the python program could set up a connection
+                        sleep(1);
+                        // set up a socket to connect to the client
+                        setUpSConnect();
+                        // send the directory
+                        sendMessage(directory);
+                        // close data socket
+                        close(s.dataSocketFD);
+                }
+                else if(s.cmnd == get && s.noError) {
+                        // same but for file contents
+                        sleep(1);
+                        setUpSConnect();
+                        sendMessage(file);
+                        close(s.dataSocketFD);
+
+                }
+                else if (s.cmnd == sendError) {
+                        // client command error
+                        printf("ERROR: validating command.\n");
+                }
+                // close first socket connection
+                close(s.establishedConnectionFD);
+
         }
 }
 

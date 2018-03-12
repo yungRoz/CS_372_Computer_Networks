@@ -12,8 +12,6 @@ import socket as sckt
 # a dictionary from them
 ###########################################################
 # Source: https://gist.github.com/dideler/2395703
-
-
 def getopts(argv):
     opts = {}  # Empty dictionary to store key-value pairs.
     opts['serverHost'] = argv[1] + '.engr.oregonstate.edu'
@@ -79,8 +77,8 @@ class Messenger:
     def connectToServer(self):
         self.connectionSocket = self.serverSocket
         self.connectionSocket.connect((self.hname, self.pnum))
-    # listen for server
 
+    # listen for server
     def listenForServer(self):
         print("listening on port " + str(self.dport))
         self.serverSocket.bind(('', self.dport))
@@ -91,8 +89,6 @@ class Messenger:
         self.connectionSocket, self.addr = self.serverSocket.accept()
         message = self.connectionSocket.recv(500)
         return message.decode()
-    # variation of wait and receive
-    # that also gets incoming amount
 
     def waitAndRecAmnt(self):
         self.connectionSocket, self.addr = self.serverSocket.accept()
@@ -133,16 +129,14 @@ class Messenger:
             portionDecoded = portion.decode()
             fullMessage += portionDecoded
             read += len(portionDecoded)
-        # remove new line characters
-        #fullMessage = fullMessage.replace("\n", "")
-        #print(fullMessage)
+
         return fullMessage
 
     # closes connection
     def close(self):
         self.connectionSocket.close()
 
-
+# returns clients hostname example: "flip1", "flip2", "flip3"
 def getClientHostName():
     ipAddress = sckt.gethostbyname(sckt.gethostname())
     response = sckt.gethostbyaddr(ipAddress)
@@ -155,19 +149,21 @@ if __name__ == '__main__':
     if len(argv) not in (5, 6):
         print("ERROR: incorrect number of arguments passed")
         exit(1)
-
+    # parse the arguments
     myargs = getopts(argv)
+    # validate the arguments
     val(myargs)
 
-    # set up messenger device for outer client connection
+    # set up a messenger device for outer client connection
     client = Messenger(myargs)
+    # get hostname for client
     clientHostName = getClientHostName()
     # set up socket
     client.setUpSocket()
-    # connect
+    # connect to the server
     client.connectToServer()
 
-    # send client hostname messages
+    # send client hostname message to server
     client.sendMessage(clientHostName)
     # get incoming amount for confirmation message
     check = client.getIncomingAmount()
@@ -176,7 +172,7 @@ if __name__ == '__main__':
     # get message
     allClear = client.getMessage()  # should be "Got" message from server
 
-    # send port number message
+    # send port number message to server
     client.sendMessage(str(myargs['dataPort']))
     # get incoming amount for confirmation message
     check = client.getIncomingAmount()
@@ -185,7 +181,7 @@ if __name__ == '__main__':
     # get message
     allClear = client.getMessage()  # should be "Got" message from server
 
-    # send command
+    # send command / server will validate
     client.sendMessage(myargs['command'])
     # get incoming amount for confrimation
     check = client.getIncomingAmount()
@@ -197,17 +193,28 @@ if __name__ == '__main__':
     # print error message if
     # error message was received
     if "Got" not in allClear:
+        # server discovered error
         print(allClear)
         exit(1)
+
+    # send file name if command is g
     if myargs['command'] == '-g':
+        # send file name over original connection
         client.sendMessage(myargs['filename'])
+        # get incoming amount for confirmation
         check = client.getIncomingAmount()
+        # send server message notify them of receipt
         client.sendMessage('received amount')
+        # get servers message
         allClear = client.getMessage()
+        # if filename was unavailable server response will not be
+        # Got
         if "Got" not in allClear:
             print("\n" + argv[1]+":"+str(myargs['dataPort'])+ " says " + allClear + "\n\n")
             exit(1)
 
+    # if made it here, the client is ready to set up a datasocket
+    # that the server can connect to
     # set up messenger device for inner data connection
     dataSocket = Messenger(myargs)
     # set up socket
@@ -216,31 +223,22 @@ if __name__ == '__main__':
     dataSocket.listenForServer()
     # wait for connect and then receive the amount
     check = dataSocket.waitAndRecAmnt()
-    # send back confirmation
+    dataSocket.sendMessage('received amount')
 
 
     if myargs['command'] == '-l':
-        dataSocket.sendMessage('received amount')
         print("\n\nReceiving directory structure from " + argv[1] + ":" + str(myargs['dataPort']) + "\n")
         message = dataSocket.getMessage()
-        # dataSocket.sendMessage('send directories')
-        # dataSocket.getAmount()
-        # datasocket.sendMessage('received amount')
-        # get message containing directories
-        #message = dataSocket.getMessage()
         message = message.replace(" ", "\n")
         print(message)
-        #messages = splitUpSpaces(message)
     else:
-        #check = dataSocket.getIncomingAmount()
-        dataSocket.sendMessage('received amount')
         print("\n\nReceiving " + myargs['filename'] + " from " + argv[1] + ":" + str(myargs['dataPort']))
-        # get message containing directories
+        # get message containing file contents
         message = dataSocket.getMessage()
+        # open file and truncate to prevent dup files
         with open(myargs['filename'], 'w+') as f:
-            # Note that f has now been truncated to 0 bytes, so you'll only
-            # be able to read data that you wrote earlier...
             f.write(message)
         print("File transfer complete!\n\n")
+    #close connection sockets 
     dataSocket.close()
     client.close()
