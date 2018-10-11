@@ -1,2 +1,2 @@
-# CS_372_Computer_Networks
-Projects for CS 372 Intro to Computer Networks
+# networking-projects
+Different projects for an Intro to Computer Networks course at OSU
